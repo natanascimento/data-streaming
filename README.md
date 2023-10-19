@@ -1,2 +1,3 @@
-# streaming-data
-Using Kafka to streaming data
+# Data Streaming Udacity
+
+Nanodegree Data Streaming Udacity
