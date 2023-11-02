@@ -5,8 +5,11 @@ from app.controller.admin import TopicController
 
 def main():
     kafka_client = KafkaClient.get(settings.kafka_broker)
-    topic_name = "com.natanascimento.lesson.asdasdas"
-    topic_exists = TopicController(client=kafka_client).topic_exists(topic_name=topic_name)
-    topic_exists = TopicController(client=kafka_client).get_topics()
-    print(topic_exists.__dict__)
-    print(topic_exists.topics)
+    topic_name = "com.natanascimento.lesson.teste"
+    topic_controller = TopicController(client=kafka_client)
+    topic_exists = topic_controller.topic_exists(topic_name=topic_name)
+    if not topic_exists:
+        topic_controller.create(topic_name=topic_name)
+
+    print()
+    print(topic_controller.list_topics())
