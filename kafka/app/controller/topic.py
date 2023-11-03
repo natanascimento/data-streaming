@@ -1,4 +1,4 @@
-from confluent_kafka.admin import NewTopic, ClusterMetadata
+from confluent_kafka.admin import AdminClient, NewTopic, ClusterMetadata
 
 from app.core.config.kafka import KafkaClient
 
@@ -10,15 +10,19 @@ class TopicController:
     
     @property
     def topics_metadata(self) -> ClusterMetadata:
+        """Return topics metadata"""
         return self._client.list_topics()
 
     def topic_exists(self, topic_name: str) -> bool:
+        """Checks if the given topic exists"""
         return self.topics_metadata.topics.get(topic_name) is not None
 
     def list_topics(self) -> list:
+        """List all topics on the cluster"""
         return list(self.topics_metadata.topics.keys())
     
     def create(self, topic_name: str) -> bool:
+        """Creates the topic with the given topic name"""
         futures = self._client.create_topics(
             [
                 NewTopic(
