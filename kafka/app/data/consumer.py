@@ -15,7 +15,7 @@ class DataConsumer:
             consumer.subscribe([topic_name], on_assign=DataConsumer._get_assignment)
     
             while True:
-                message = consumer.poll(0)
+                message = consumer.poll(timeout=1.0)
 
                 if message is not None:
                     print(f"""Consumed message with key:{message.key()} | 
