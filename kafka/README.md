@@ -111,9 +111,13 @@ Example:
 - Create topics manually, you can create topics automatically, but this is an anti-pattern and bad practice.
 - Write code or use a provisioning tool to **manually create your topics** as needed.
 
+## Performance
+
 ### Consumer Performance
 
 The most important metric to understand for Kafka Consumer is **consumer lag**.
+
+`# Lag = Latest topic offset - Consumer topic offset`
 
 - Consumer lag is measured by taking the difference between the current consumer offset, and the offset of the newest message for that topic partition.
 - There will almost always be some consumer lag
@@ -127,7 +131,55 @@ Another important metric to measure is the number of messages per second passing
 - It can be useful in understanding if you’re meeting performance goals
 - It is typically calculated in conjunction with consumer lag
 
-Kafka emits metrics for throughput via the Java Metrics Exporter, or JMX, so that you can hook this metric directly into your monitoring dashboards and alerting systems.
+Kafka emits metrics for throughput via JMX, so that you can hook this metric directly into your monitoring dashboards and alerting systems.
+
+### Producer Performance
+
+When a producer sends messages to Kafka, there is always some inherent latency in that process. Ideally, that latency number is small and consistent.
+
+`# Latency = time broker received - time produced`
+
+- High latency can indicate that your acks setting is too high and that too many ISRs nodes must confirm the message before returning.
+- It may also indicate that too many partitions or replicas have been assigned to this topic.
+
+Another metric to keep your eyes on is the producer response rate. This metric is an indicator of how many messages are being delivered over time.
+
+- All of these metrics may be created by using producer delivery callbacks in the client library.
+
+### Broker Performance
+
+The Kafka broker is the conduit through which data in a system flows.
+
+- First, disk usage should be monitored as Kafka retains data, sometimes indefinitely.
+- Network usage is a critical metric to measure.
+- Election frequency is another important metric
+
+## Data Privacy
+
+### Removing Records and Data Privacy
+
+Kafka supports message expiration:
+
+- Kafka can expire messages based on time, topic size, or both
+
+However, some use cases disallow the use of message expiration to manage user data. When this occurs, use log compaction instead of log expiration to manage a user’s personal data.
+
+- With a compacted topic, you can continue to publish updates to a particular message as long as the keys match.
+- A message with a matching key and a null value tells the Kafka broker that it should delete the key on the next compaction, effectively deleting the message.
+- There are log compaction timing settings on the topic.
+
+One of the major problems with this approach, however, is that user data may be spread through many topics, and not always keyed on the user ID. So, unfortunately, this strategy is typically not enough.
+
+### Strategy (Per-User Key Encryption)
+
+Create a topic that maps a user id to an encryption key
+
+- Used to encrypt any data related to a user before putting it into any other Kafka topic
+- Vastly reduces the management overhead of deleting user data
+
+To delete the user, simply compact and delete their encryption key from the encrypted user key topic. Once the key is gone, it is effectively impossible for any application in the system to decrypt the user’s data ever again.
+
+Reference of this approach -> https://danlebrero.com/2018/04/11/kafka-gdpr-event-sourcing/
 
 ## Glossary
 
@@ -176,3 +228,7 @@ Kafka emits metrics for throughput via the Java Metrics Exporter, or JMX, so tha
 - [Data Replication](https://kafka.apache.org/documentation/#replication)
 - [Topic configs](https://kafka.apache.org/documentation.html#topicconfigs)
 - [Consumer Metrics](https://kafka.apache.org/30/generated/consumer_metrics.html)
+- [Monitoring Kafka performance metrics](https://www.datadoghq.com/blog/monitoring-kafka-performance-metrics/)
+- [Monitoring Kafka with JMX](https://docs.confluent.io/platform/current/kafka/monitoring.html)
+- [Monitoring Kafka performance metrics](https://www.datadoghq.com/blog/monitoring-kafka-performance-metrics/)
+- [Handling GDPR with Apache Kafka: How does a log forget?](https://www.confluent.io/blog/handling-gdpr-log-forget/)
