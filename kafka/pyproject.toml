@@ -20,4 +20,4 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.scripts]
-start = {call = "app.main:start"}
+start = {call = "app:start"}

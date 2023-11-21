@@ -1,4 +1,5 @@
 import asyncio
+import argparse
 
 from app.core.config import settings
 from app.core.config.kafka import KafkaClient, KafkaConsumer, KafkaProducer
@@ -28,14 +29,30 @@ async def produce_consume(topic_name):
     await produce_task
     await consume_task
 
+def get_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--mode', help="mode that you'll use to interact with kafka (possible args: consume | produce)")
+    parser.add_argument('-t', '--topic', help="topic that you'll interact")
+    args = parser.parse_args()
+    if not args.topic:
+        raise ValueError("It's necessary to have a topic to consume or produce data")
+    if args.mode != "consume" and args.mode != "produce":
+        raise ValueError("It's necessary to have 'consume' or 'produce' for mode argument")
+    return args
+
 def start():
+    args = get_arguments()
     kafka_client = KafkaClient.get(broker_configs=settings.kafka_broker)
-    topic_name = "com.natanascimento.lesson.teste"
     topic_controller = TopicController(client=kafka_client)
-    topic_exists = topic_controller.topic_exists(topic_name=topic_name)
+    topic_exists = topic_controller.topic_exists(topic_name=args.topic)
 
     if not topic_exists:
-        print(f"Topic {topic_name} doesn't exists")
-        topic_controller.create(topic_name=topic_name)
+        print(f"Topic {args.topic} doesn't exists")
+        topic_controller.create(topic_name=args.topic)
 
-    asyncio.run(produce_consume(topic_name=topic_name))
+    if args.mode == "consume":
+        asyncio.run(consume(topic_name=args.topic))
+    elif args.mode == "produce":
+        asyncio.run(produce(topic_name=args.topic))
+
+    asyncio.run(produce_consume(topic_name=args.topic))
