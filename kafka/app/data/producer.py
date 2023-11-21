@@ -20,7 +20,7 @@ class DataProducer:
                              value=str(message), 
                              on_delivery=DataProducer._delivery_callback)
             producer.poll(0)
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.1)
         except BufferError:
             print(f'Local producer queue is full ({len(producer)} messages awaiting delivery): try again\n')
         except Exception as exception:

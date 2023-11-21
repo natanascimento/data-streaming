@@ -27,7 +27,7 @@ class DataConsumer:
 
                 print("No message received by consumer")
 
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.1)
                 
         except Exception as e:
             raise e

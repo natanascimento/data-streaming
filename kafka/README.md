@@ -111,7 +111,23 @@ Example:
 - Create topics manually, you can create topics automatically, but this is an anti-pattern and bad practice.
 - Write code or use a provisioning tool to **manually create your topics** as needed.
 
+### Consumer Performance
 
+The most important metric to understand for Kafka Consumer is **consumer lag**.
+
+- Consumer lag is measured by taking the difference between the current consumer offset, and the offset of the newest message for that topic partition.
+- There will almost always be some consumer lag
+- Kafka CLI tools to measure consumer lag.
+
+If you notice that the consumer lag number continues to grow over time, though, that is an indicator that your consumer cannot keep up. In that case, you typically will need additional consumer processes in order to keep up.
+
+Another important metric to measure is the number of messages per second passing through your Kafka topic.
+
+- This number indicates the throughput of your topic
+- It can be useful in understanding if you’re meeting performance goals
+- It is typically calculated in conjunction with consumer lag
+
+Kafka emits metrics for throughput via the Java Metrics Exporter, or JMX, so that you can hook this metric directly into your monitoring dashboards and alerting systems.
 
 ## Glossary
 
@@ -159,3 +175,4 @@ Example:
 - [Considerations in choosing the number of partitions](https://www.confluent.io/blog/how-choose-number-topics-partitions-kafka-cluster)
 - [Data Replication](https://kafka.apache.org/documentation/#replication)
 - [Topic configs](https://kafka.apache.org/documentation.html#topicconfigs)
+- [Consumer Metrics](https://kafka.apache.org/30/generated/consumer_metrics.html)

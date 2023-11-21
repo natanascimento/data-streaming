@@ -36,7 +36,7 @@ def get_arguments():
     args = parser.parse_args()
     if not args.topic:
         raise ValueError("It's necessary to have a topic to consume or produce data")
-    if args.mode != "consume" and args.mode != "produce":
+    if args.mode != "consume" and args.mode != "produce" and args.mode != None:
         raise ValueError("It's necessary to have 'consume' or 'produce' for mode argument")
     return args
 

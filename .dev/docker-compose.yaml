@@ -1,0 +1,94 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    networks:
+      - data-streaming-platform
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    networks:
+      - data-streaming-platform
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9991:9991"
+    container_name: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_JMX_PORT: 9991
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      CONFLUENT_VALUE_SCHEMA_VALIDATION: 'false'
+      CONFLUENT_KEY_SCHEMA_VALIDATION: 'false'
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    networks:
+      - data-streaming-platform
+    depends_on:
+      - kafka
+    ports:
+      - "19000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+
+  grafana:
+    image: "grafana/grafana:latest"
+    ports:
+     - "3000:3000"
+    environment:
+      GF_PATHS_DATA : /var/lib/grafana
+      GF_SECURITY_ADMIN_PASSWORD : kafka
+    volumes:
+     - ./grafana/provisioning:/etc/grafana/provisioning
+     - ./grafana/dashboards:/var/lib/grafana/dashboards
+    container_name: grafana
+    depends_on:
+     - prometheus
+    networks:
+      - data-streaming-platform
+
+  prometheus:
+    image: "prom/prometheus:latest"
+    ports:
+     - "9090:9090"
+    volumes:
+     - ./prometheus/config.yml:/etc/prometheus/config.yml
+    command: "--config.file=/etc/prometheus/config.yml"
+    container_name: prometheus
+    networks:
+      - data-streaming-platform
+
+  jmx-kafka:
+    image: "sscaling/jmx-prometheus-exporter"
+    ports:
+     - "5556:5556"
+    environment:
+     CONFIG_YML : "/etc/jmx_exporter/config.yaml"
+    volumes:
+     - ./jmx/config.yaml:/etc/jmx_exporter/config.yaml
+    container_name: jmx-kafka
+    depends_on:
+     - kafka
+    networks:
+      - data-streaming-platform
+
+networks:
+  data-streaming-platform:
+    name: data-streaming-platform
+    driver: bridge
