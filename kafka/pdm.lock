@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:6f691666c8c202856e4c9cfd6d89d494db9f95b97b59919dc0083212b477e6d1"
+content_hash = "sha256:0b9cfde647559a18cd4ce68021c074cde6dee1c702949ec21179071436f79ecd"
 
 [[package]]
 name = "annotated-types"
@@ -141,6 +141,19 @@ dependencies = [
 files = [
     {file = "pydantic-2.5.1-py3-none-any.whl", hash = "sha256:dc5244a8939e0d9a68f1f1b5f550b2e1c879912033b1becbedb315accc75441b"},
     {file = "pydantic-2.5.1.tar.gz", hash = "sha256:0b8be5413c06aadfbe56f6dc1d45c9ed25fd43264414c571135c97dd77c2bedb"},
+]
+
+[[package]]
+name = "pydantic-avro"
+version = "0.6.5"
+requires_python = ">=3.7,<4.0"
+summary = "Converting pydantic classes to avro schemas"
+dependencies = [
+    "pydantic<3.0,>=1.4",
+]
+files = [
+    {file = "pydantic_avro-0.6.5-py3-none-any.whl", hash = "sha256:4b9f50614e666a88560caf4d60951256962ec22255697f2147484ed408238a9d"},
+    {file = "pydantic_avro-0.6.5.tar.gz", hash = "sha256:f1897018dafb010a859df037637339dddd82fdfca3696ebd7a0837accac036a3"},
 ]
 
 [[package]]

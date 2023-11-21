@@ -2,12 +2,13 @@ from datetime import datetime
 from random import randint
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from pydantic_avro.base import AvroBase
 
 from app.model import faker
 
 
-class Purchase(BaseModel):
+class Purchase(AvroBase):
     id: str = Field(default_factory=lambda: uuid4().hex)
     username: str = Field(default_factory=faker.user_name)
     currency: str = Field(default_factory=faker.currency_code)
@@ -15,5 +16,9 @@ class Purchase(BaseModel):
     created_at: str = Field(default=datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
 
     @staticmethod
-    def get():
+    def json():
         return Purchase().model_dump(by_alias=True)
+
+    @staticmethod
+    def avro(namespace:str):
+        return Purchase().avro_schema(namespace=namespace)

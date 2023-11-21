@@ -14,7 +14,7 @@ async def produce(topic_name):
     for i in range(10000):
         await DataProducer.produce(producer=KafkaProducer.get(broker_configs=settings.kafka_broker),
                                    topic_name=topic_name,
-                                   message=Purchase.get())
+                                   message=Purchase.avro(namespace=".".join(topic_name.split(".")[:2])))
 
 async def consume(topic_name):
     """Runs the Consumer tasks"""
