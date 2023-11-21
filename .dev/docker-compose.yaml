@@ -1,25 +1,25 @@
 version: '3'
 services:
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    networks:
-      - data-streaming-platform
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
+    networks:
+      - data-streaming-platform
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    networks:
-      - data-streaming-platform
+    container_name: kafka
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
       - "9991:9991"
-    container_name: kafka
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_JMX_PORT: 9991
@@ -35,17 +35,50 @@ services:
       CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'false'
+    networks:
+      - data-streaming-platform
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    container_name: schema-registry
+    hostname: schema-registry
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema_registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,OPTIONS
+    networks:
+      - data-streaming-platform
+
+  schema-registry-ui:
+    image: landoop/schema-registry-ui
+    hostname: schema-registry-ui
+    depends_on:
+      - kafka
+      - schema-registry
+    ports:
+      - "8002:8000"
+    environment:
+      SCHEMAREGISTRY_URL: 'http://schema-registry:8081'
+    networks:
+      - data-streaming-platform
 
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
-    networks:
-      - data-streaming-platform
     depends_on:
       - kafka
     ports:
       - "19000:9000"
     environment:
       KAFKA_BROKERCONNECT: kafka:29092
+    networks:
+      - data-streaming-platform
 
   grafana:
     image: "grafana/grafana:latest"
